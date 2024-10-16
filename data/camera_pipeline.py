@@ -138,6 +138,8 @@ def safe_invert_gains(image, rgb_gain, red_gain, blue_gain):
 
 def mosaic(image, mode='rggb'):
     """Extracts RGGB Bayer planes from an RGB image."""
+    print("mode: " + mode)
+    
     shape = image.shape
     if image.dim() == 3:
         image = image.unsqueeze(0)
@@ -151,10 +153,21 @@ def mosaic(image, mode='rggb'):
     elif mode == 'grbg':
         green_red = image[:, 1, 0::2, 0::2]
         red = image[:, 0, 0::2, 1::2]
-        blue = image[:, 2, 0::2, 1::2]
+        blue = image[:, 2, 1::2, 0::2]
         green_blue = image[:, 1, 1::2, 1::2]
-
         image = torch.stack((green_red, red, blue, green_blue), dim=1)
+    elif mode == 'gbrg':
+        green_blue = image[:, 1, 0::2, 0::2]
+        blue = image[:, 2, 0::2, 1::2]
+        red = image[:, 0, 1::2, 0::2]
+        green_red = image[:, 1, 1::2, 1::2]
+        image = torch.stack((green_blue, blue, red, green_red), dim=1)
+    elif mode == 'bggr':
+        blue = image[:, 2, 0::2, 0::2]
+        green_blue = image[:, 1, 0::2, 1::2]
+        green_red = image[:, 1, 1::2, 0::2]
+        red = image[:, 0, 1::2, 1::2]
+        image = torch.stack((blue, green_blue, green_red, red), dim=1)
 
     if len(shape) == 3:
         return image.view((4, shape[-2] // 2, shape[-1] // 2))

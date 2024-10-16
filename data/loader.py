@@ -1,8 +1,9 @@
+import collections.abc
 import torch
 import torch.utils.data.dataloader
 import importlib
 import collections
-from torch._six import string_classes
+# from torch._six import string_classes
 from admin.tensordict import TensorDict
 
 int_classes = int
@@ -49,11 +50,11 @@ def collate(batch):
         return torch.LongTensor(batch)
     elif isinstance(batch[0], float):
         return torch.DoubleTensor(batch)
-    elif isinstance(batch[0], string_classes):
+    elif isinstance(batch[0], str):
         return batch
     elif isinstance(batch[0], TensorDict):
         return TensorDict({key: collate([d[key] for d in batch]) for key in batch[0]})
-    elif isinstance(batch[0], collections.Mapping):
+    elif isinstance(batch[0], collections.abc.Mapping):
         return {key: collate([d[key] for d in batch]) for key in batch[0]}
     elif isinstance(batch[0], (list, tuple)):
         return batch
@@ -96,7 +97,7 @@ def collate_stack1(batch):
         return torch.LongTensor(batch)
     elif isinstance(batch[0], float):
         return torch.DoubleTensor(batch)
-    elif isinstance(batch[0], string_classes):
+    elif isinstance(batch[0], str):
         return batch
     elif isinstance(batch[0], TensorDict):
         return TensorDict({key: collate_stack1([d[key] for d in batch]) for key in batch[0]})

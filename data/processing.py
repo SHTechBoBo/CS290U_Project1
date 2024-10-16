@@ -43,7 +43,7 @@ class SyntheticBurstProcessing(BaseProcessing):
     noise. """
     def __init__(self, crop_sz, burst_size, downsample_factor, crop_scale_range=None, crop_ar_range=None,
                  burst_transformation_params=None, image_processing_params=None,
-                 interpolation_type='bilinear', return_rgb_busrt=False, random_crop=True,
+                 interpolation_type='bilinear', return_rgb_busrt=False, random_crop=True, bayer_pattern='rggb',
                  *args, **kwargs):
         """
         args:
@@ -81,6 +81,8 @@ class SyntheticBurstProcessing(BaseProcessing):
         self.random_crop = random_crop
 
         self.image_processing_params = image_processing_params
+        
+        self.bayer_pattern = bayer_pattern
 
     def __call__(self, data: TensorDict):
         # Augmentation, e.g. convert to tensor
@@ -105,8 +107,8 @@ class SyntheticBurstProcessing(BaseProcessing):
                                                                                                self.downsample_factor,
                                                                                                burst_transformation_params=self.burst_transformation_params,
                                                                                                image_processing_params=self.image_processing_params,
-                                                                                               interpolation_type=self.interpolation_type
-                                                                                               )
+                                                                                               interpolation_type=self.interpolation_type,
+                                                                                               bayer_pattern=self.bayer_pattern)
 
         # Crop border regions
         if self.burst_transformation_params.get('border_crop') is not None:

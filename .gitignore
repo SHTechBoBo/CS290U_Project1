@@ -6,3 +6,13 @@
 **/*.pth
 admin/local.py
 pretrained_networks/*
+
+dataset_imgs/
+*.zip
+results/
+yehw2024_project1/result/
+yehw2024_project1/generated_imgs/
+yehw2024_project1/original_imgs/
+
+
+tensorboard/

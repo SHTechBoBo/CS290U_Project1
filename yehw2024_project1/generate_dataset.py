@@ -5,11 +5,20 @@ import os
 import numpy as np
 import cv2
 import pickle as pkl
-
+import random
 
 def main():
-    image_folder_path = './MyDataSet/original_imgs'
-    out_dir = './MyDataSet/burst_imgs'
+    random.seed(7)
+    
+    image_folder_path = './yehw2024_project1/original_imgs'
+    
+    out_dir = './yehw2024_project1/generated_imgs'
+    # clear out_dir
+    if os.path.exists(out_dir):
+        import shutil
+        shutil.rmtree(out_dir)
+    os.makedirs(out_dir)
+    
 
     crop_sz = (1024 + 24*2, 1024 + 24*2)
     burst_sz = 14
@@ -29,26 +38,40 @@ def main():
     data_processing = processing.SyntheticBurstProcessing(crop_sz, burst_sz, downsample_factor,
                                                           burst_transformation_params=burst_transformation_params,
                                                           transform=transform_list,
-                                                          image_processing_params=image_processing_params)
+                                                          image_processing_params=image_processing_params,
+                                                          return_rgb_busrt = True,
+                                                          bayer_pattern="rggb")
     dataset = sampler.IndexedImage(image_dataset, processing=data_processing)
 
     for i, d in enumerate(dataset):
+        burst_rgb_imgs = d['burst_rgb']
+        
+        
         burst = d['burst']
         gt = d['frame_gt']
         meta_info = d['meta_info']
         meta_info['frame_num'] = i
 
-        os.makedirs('{}/{:04d}'.format(out_dir, i), exist_ok=True)
+        bursts_rgb_path = '{}/bursts_rgb/{:04d}'.format(out_dir, i)
+        bursts_path = '{}/bursts/{:04d}'.format(out_dir, i)
+        gt_path = '{}/gt/{:04d}'.format(out_dir, i)
+        
+        os.makedirs(bursts_rgb_path, exist_ok=True)
+        os.makedirs(bursts_path, exist_ok=True)
+        os.makedirs(gt_path, exist_ok=True)
+
+        burst_rgb_np = (burst_rgb_imgs.permute(0, 2, 3, 1).clamp(0.0, 1.0) * 2**14).numpy().astype(np.uint16)
+        for bi, b in enumerate(burst_rgb_np):
+            cv2.imwrite('{}/im_raw_{:02d}.png'.format(bursts_rgb_path, bi), b)
 
         burst_np = (burst.permute(0, 2, 3, 1).clamp(0.0, 1.0) * 2**14).numpy().astype(np.uint16)
-
         for bi, b in enumerate(burst_np):
-            cv2.imwrite('{}/{:04d}/im_raw_{:02d}.png'.format(out_dir, i, bi), b)
+            cv2.imwrite('{}/im_raw_{:02d}.png'.format(bursts_path, bi), b)
 
         gt_np = (gt.permute(1, 2, 0).clamp(0.0, 1.0) * 2 ** 14).numpy().astype(np.uint16)
-        cv2.imwrite('{}/{:04d}/im_rgb.png'.format(out_dir, i), gt_np)
+        cv2.imwrite('{}/im_rgb.png'.format(gt_path), gt_np)
 
-        with open('{}/{:04d}/meta_info.pkl'.format(out_dir, i), "wb") as file_:
+        with open('{}/meta_info.pkl'.format(gt_path), "wb") as file_:
             pkl.dump(meta_info, file_, -1)
 
 
