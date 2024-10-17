@@ -39,14 +39,15 @@ def save_results(setting_name):
     expr_func = getattr(expr_module, 'main')
     network_list = expr_func()
     
-    dataset = MySyntheticBurstVal()
+    bayer_pattern = 'bggr'
+    dataset = MySyntheticBurstVal(bayer_pattern=bayer_pattern)
 
     for n in network_list:
         net = n.load_net()
         device = 'cuda'
         net.to(device).train(False)
 
-        out_dir = './yehw2024_project1/result/{}'.format(n.get_unique_name())
+        out_dir = './yehw2024_project1/result/{}/{}'.format(n.get_unique_name(), bayer_pattern)
         os.makedirs(out_dir, exist_ok=True)
 
         for idx in tqdm.tqdm(range(len(dataset))):

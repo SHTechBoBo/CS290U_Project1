@@ -32,6 +32,9 @@ import numpy as np
 import tqdm
 from admin.environment import env_settings
 
+import warnings
+warnings.filterwarnings("ignore")
+
 
 def compute_score(setting_name, load_saved=False):
     """ Compute scores on SyntheticBurst validation set. If load_saved is true, the script will use pre-computed
@@ -66,10 +69,12 @@ def compute_score(setting_name, load_saved=False):
 
     scores_all = {}
 
+    bayer_pattern = 'grbg'
+
     for n in network_list:
         scores = {k: [] for k, v in scores.items()}
 
-        out_dir = '{}/synburst/{}'.format(base_results_dir, n.get_unique_name())
+        out_dir = './yehw2024_project1/result/{}/{}'.format(n.get_unique_name(), bayer_pattern)
 
         using_saved_results = False
         if load_saved:

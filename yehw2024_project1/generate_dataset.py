@@ -14,10 +14,10 @@ def main():
     
     out_dir = './yehw2024_project1/generated_imgs'
     # clear out_dir
-    if os.path.exists(out_dir):
-        import shutil
-        shutil.rmtree(out_dir)
-    os.makedirs(out_dir)
+    # if os.path.exists(out_dir):
+    #     import shutil
+    #     shutil.rmtree(out_dir)
+    os.makedirs(out_dir, exist_ok=True)
     
 
     crop_sz = (1024 + 24*2, 1024 + 24*2)
@@ -35,12 +35,14 @@ def main():
     image_dataset = datasets.ImageFolder(root=image_folder_path)
 
     transform_list = tfm.Transform(tfm.ToTensorAndJitter(0.0, normalize=True), tfm.RandomHorizontalFlip())
+
+    bayer_pattern = "gbrg"
     data_processing = processing.SyntheticBurstProcessing(crop_sz, burst_sz, downsample_factor,
                                                           burst_transformation_params=burst_transformation_params,
                                                           transform=transform_list,
                                                           image_processing_params=image_processing_params,
                                                           return_rgb_busrt = True,
-                                                          bayer_pattern="rggb")
+                                                          bayer_pattern=bayer_pattern)
     dataset = sampler.IndexedImage(image_dataset, processing=data_processing)
 
     for i, d in enumerate(dataset):
@@ -52,8 +54,8 @@ def main():
         meta_info = d['meta_info']
         meta_info['frame_num'] = i
 
-        bursts_rgb_path = '{}/bursts_rgb/{:04d}'.format(out_dir, i)
-        bursts_path = '{}/bursts/{:04d}'.format(out_dir, i)
+        bursts_rgb_path = '{}/bursts_rgb_{}/{:04d}'.format(out_dir, bayer_pattern, i)
+        bursts_path = '{}/bursts_{}/{:04d}'.format(out_dir, bayer_pattern, i)
         gt_path = '{}/gt/{:04d}'.format(out_dir, i)
         
         os.makedirs(bursts_rgb_path, exist_ok=True)

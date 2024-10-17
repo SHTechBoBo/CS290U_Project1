@@ -46,20 +46,32 @@ def visualize_results(setting_name):
 
     dataset = MySyntheticBurstVal()
 
+    bayer_pattern = 'rggb'
+
     for idx in range(len(dataset)):
         burst, gt, meta_info = dataset[idx]
         burst_name = meta_info['burst_name']
 
         pred_all = []
         titles_all = []
+        lr_pred_all = []
+        lr_titles_all = []
         for n in network_list:
-            pred_path = './yehw2024_project1/result/{}/{}.png'.format(n.get_unique_name(), burst_name)
+            pred_path = './yehw2024_project1/result/{}/{}/{}.png'.format(n.get_unique_name(), bayer_pattern, burst_name)
             pred = cv2.imread(pred_path, cv2.IMREAD_UNCHANGED)
             pred = torch.from_numpy(pred.astype(np.float32) / 2 ** 14).permute(2, 0, 1)
             pred_all.append(pred)
             titles_all.append(n.get_display_name())
+            
+            
+            lr_path = './yehw2024_project1/generated_imgs/bursts_rgb_rggb/{:04d}/im_raw_00.png'.format(idx)
+            lr_pred = cv2.imread(lr_path, cv2.IMREAD_UNCHANGED)
+            lr_pred = torch.from_numpy(lr_pred.astype(np.float32) / 2 ** 14).permute(2, 0, 1)
+            lr_pred_all.append(lr_pred)
+            lr_titles_all.append("LR")
+            
 
-        path = './yehw2024_project1/result/processed_imgs/{}'.format(burst_name)
+        path = './yehw2024_project1/result/processed_imgs/{}/{}'.format(bayer_pattern, burst_name)
         if not os.path.exists(path):
             os.makedirs(path)
         gt = process_fn.process(gt, meta_info)
@@ -68,6 +80,10 @@ def visualize_results(setting_name):
         for i in range(len(pred_all)):
             pred = process_fn.process(pred_all[i], meta_info)
             cv2.imwrite(os.path.join(path, f"{i}.png"), pred)
+        
+        for i in range(len(lr_pred_all)):
+            lr_pred = process_fn.process(lr_pred_all[i], meta_info)
+            cv2.imwrite(os.path.join(path, f"lr_{i}.png"), lr_pred)
             
 
         # pred_all = [process_fn.process(p, meta_info) for p in pred_all]

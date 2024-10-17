@@ -22,7 +22,7 @@ class MySyntheticBurstVal(torch.utils.data.Dataset):
     """ Synthetic burst validation set. The validation burst have been generated using the same synthetic pipeline as
     employed in SyntheticBurst dataset.
     """
-    def __init__(self, root=None, initialize=True):
+    def __init__(self, root=None, initialize=True, bayer_pattern="rggb"):
         """
         args:
             root - Path to root dataset directory
@@ -36,6 +36,8 @@ class MySyntheticBurstVal(torch.utils.data.Dataset):
         
         self.burst_list = list(range(imgs_num))
         self.burst_size = 14
+        
+        self.bayer_pattern = bayer_pattern
 
     def initialize(self):
         pass
@@ -44,7 +46,7 @@ class MySyntheticBurstVal(torch.utils.data.Dataset):
         return len(self.burst_list)
 
     def _read_burst_image(self, index, image_id):
-        im = cv2.imread('{}/bursts/{:04d}/im_raw_{:02d}.png'.format(self.root, index, image_id), cv2.IMREAD_UNCHANGED)
+        im = cv2.imread('{}/bursts_{}/{:04d}/im_raw_{:02d}.png'.format(self.root, self.bayer_pattern, index, image_id), cv2.IMREAD_UNCHANGED)
         im_t = torch.from_numpy(im.astype(np.float32)).permute(2, 0, 1).float() / (2**14)
 
         return im_t
